@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MathCraft: Mercadinho da Matemática</title>
+<style>
+:root{
+  --parede:#0b1f22; --quadro:#12353a; --quadro-2:#0c2528; --giz:#eaf2ee; --giz-2:#a9c2ba;
+  --papel:#fbfaf4; --tinta:#1d2b2a; --ouro:#f2b705; --menta:#5fd3a0; --erro:#ff7a66;
+  --lcd:#071619; --madeira:#8b5a2b; --madeira-2:#5e3b17;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:radial-gradient(900px 500px at 15% -10%,#17434a 0%,transparent 60%),var(--parede);
+  color:var(--giz);
+  font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;font-size:18px;line-height:1.5;
+  min-height:100vh;padding:20px 14px 48px;
+}
+/* moldura de madeira do quadro-negro */
+main{
+  max-width:660px;margin:0 auto;padding:26px 24px 30px;
+  background:
+    radial-gradient(700px 300px at 70% 0%,rgba(255,255,255,.06),transparent 70%),
+    linear-gradient(180deg,var(--quadro),#0f2e33);
+  border:12px solid var(--madeira);border-radius:16px;
+  box-shadow:inset 0 0 0 3px var(--madeira-2),inset 0 0 40px rgba(0,0,0,.45),0 18px 40px rgba(0,0,0,.45);
+}
+h1,h2{font-family:Rockwell,"Roboto Slab",Georgia,serif;margin:0;line-height:1.15}
+h1{font-size:2.3rem;letter-spacing:.01em}
+h2{font-size:1.5rem}
+p{margin:.4em 0}
+.hidden{display:none!important}
+:focus-visible{outline:3px solid var(--ouro);outline-offset:3px}
+
+.topo{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.logo{font-family:Rockwell,Georgia,serif;font-size:1.3rem;font-weight:700}
+.logo span{color:var(--ouro)}
+.placar{display:flex;gap:10px;font-size:.85rem;color:var(--giz-2)}
+.placar div{background:var(--quadro-2);border-radius:10px;padding:4px 12px;text-align:center;line-height:1.2}
+.placar b{display:block;color:var(--giz);font-size:1.25rem}
+.placar b.pulo{animation:pulo .35s}
+.barra{height:10px;background:var(--quadro-2);border-radius:99px;overflow:hidden;margin-bottom:22px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4)}
+.barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--menta),var(--ouro));border-radius:99px;transition:width .4s}
+
+/* início */
+.intro h1{display:inline-block;border-bottom:4px solid var(--ouro);padding-bottom:4px;margin-bottom:6px}
+.intro p{color:var(--giz-2)}
+label{display:block;margin:24px 0 6px;font-weight:700}
+input[type=text]{
+  width:100%;font:inherit;padding:12px 14px;border-radius:10px;border:2px solid var(--giz-2);
+  background:var(--quadro-2);color:var(--giz)
+}
+input[type=text]:focus{border-color:var(--ouro);outline:none}
+.temas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.tema{
+  --c:var(--giz-2);
+  font:inherit;text-align:left;padding:14px 14px 14px 18px;border-radius:12px;
+  border:2px solid rgba(169,194,186,.35);border-left:8px solid var(--c);
+  background:var(--quadro-2);color:var(--giz);cursor:pointer;min-height:80px;
+  transition:transform .15s,border-color .15s,background .15s
+}
+.tema:hover{transform:translateY(-3px);border-color:var(--c);background:#10333a}
+.tema:active{transform:translateY(0)}
+.tema small{display:block;color:var(--giz-2)}
+.tema.mix{grid-column:1/-1;--c:var(--ouro)}
+.tema b{font-size:1.08rem}
+
+/* nota fiscal (destaque) */
+.nota{
+  --c:var(--ouro);
+  position:relative;background:var(--papel);color:var(--tinta);padding:18px 22px 26px;
+  border-radius:4px 4px 0 0;border-top:8px solid var(--c);margin:0 4px 28px;
+  transform:rotate(-.5deg);box-shadow:0 8px 18px rgba(0,0,0,.35);
+  animation:entra .35s ease-out
+}
+.nota::after{
+  content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;
+  background:linear-gradient(135deg,var(--papel) 50%,transparent 50%) 0 0/16px 12px repeat-x,
+             linear-gradient(225deg,var(--papel) 50%,transparent 50%) 0 0/16px 12px repeat-x;
+}
+.nota .cat{display:flex;justify-content:space-between;gap:10px;border-bottom:2px dashed #b9b8a8;padding-bottom:8px;margin-bottom:12px;font-size:.95rem;color:#55625f}
+.nota .cat b{color:var(--tinta)}
+.nota .texto{font-size:1.32rem;line-height:1.45;margin:0}
+
+/* visor da caixa registradora */
+.visor{
+  display:flex;align-items:center;gap:10px;background:var(--lcd);
+  border:4px solid #1c2a2c;border-radius:14px;padding:6px 16px;margin-bottom:14px;
+  box-shadow:inset 0 4px 10px rgba(0,0,0,.7),0 2px 0 #000
+}
+.visor input{
+  flex:1;min-width:0;background:transparent;border:0;color:var(--menta);
+  font-family:Consolas,"Courier New",monospace;font-size:2.3rem;text-align:right;padding:8px 0;outline:none;
+  text-shadow:0 0 10px rgba(95,211,160,.45)
+}
+.visor input::placeholder{color:#1d4a45}
+.visor .un{color:var(--giz-2);font-size:1.1rem;min-width:3rem}
+.visor:focus-within{border-color:var(--ouro)}
+.visor.certo{border-color:var(--menta);animation:pulo .4s}
+.visor.errado{border-color:var(--erro);animation:treme .4s}
+
+.linha{display:flex;gap:10px;flex-wrap:wrap}
+button.btn{
+  font:inherit;font-weight:700;padding:12px 22px;border-radius:12px;border:0;cursor:pointer;
+  background:var(--ouro);color:#2a2000;min-height:48px;
+  box-shadow:0 4px 0 #a37a00;transition:transform .1s,box-shadow .1s,filter .15s
+}
+button.btn:hover{filter:brightness(1.08)}
+button.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a37a00}
+button.sec{background:transparent;color:var(--giz);border:2px solid var(--giz-2);box-shadow:none}
+button.sec:active{transform:translateY(1px);box-shadow:none}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+.confirma{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px;padding:14px 16px;
+  border-radius:12px;background:var(--quadro-2);border:2px solid var(--ouro)
+}
+.confirma span{flex:1 1 100%}
+
+.dica,.retorno{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--quadro-2);animation:entra .3s ease-out}
+.dica{color:var(--giz-2);border-left:6px solid var(--ouro)}
+.retorno.certo{border-left:6px solid var(--menta)}
+.retorno.errado{border-left:6px solid var(--erro)}
+.retorno strong{display:block;font-size:1.15rem;margin-bottom:4px}
+.retorno ol{margin:.3em 0 0;padding-left:1.3em;color:var(--giz)}
+.retorno ol li{margin-bottom:.35em}
+.retorno .como{margin:.7em 0 0;font-weight:700;color:var(--giz-2)}
+.retorno .truque{margin:.8em 0 0;padding-top:.7em;border-top:1px dashed rgba(169,194,186,.4);color:var(--ouro)}
+.pontos{color:var(--ouro);font-weight:700}
+
+/* fim */
+.titulo-final{color:var(--ouro);font-size:1.5rem;font-family:Rockwell,Georgia,serif;margin:4px 0 12px}
+.resumo{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.resumo div{flex:1 1 130px;background:var(--quadro-2);border-radius:12px;padding:10px 14px;font-size:.92rem;color:var(--giz-2)}
+.resumo b{display:block;font-size:1.8rem;color:var(--giz)}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px;padding:0;list-style:none}
+.badges li{background:var(--ouro);color:#2a2000;font-weight:700;border-radius:99px;padding:6px 14px;font-size:.95rem;animation:entra .4s ease-out backwards}
+.badges li:nth-child(2){animation-delay:.1s}.badges li:nth-child(3){animation-delay:.2s}.badges li:nth-child(4){animation-delay:.3s}
+.rank{padding-left:1.4em;margin:6px 0 20px}
+.rank li{padding:3px 0}
+.rank li:first-child{color:var(--ouro);font-weight:700}
+.rank span{color:var(--giz-2);font-weight:400}
+details{margin-top:28px;color:var(--giz-2)}
+summary{cursor:pointer;color:var(--giz)}
+pre{background:var(--lcd);padding:14px;border-radius:10px;overflow-x:auto;font-size:.82rem;line-height:1.5;color:var(--menta)}
+
+@keyframes entra{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pulo{50%{transform:scale(1.06)}}
+@keyframes treme{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+@media (max-width:520px){
+  body{font-size:17px;padding:10px 6px 32px}
+  main{padding:18px 14px 24px;border-width:8px}
+  h1{font-size:1.8rem}
+  .temas{grid-template-columns:1fr}
+  .visor input{font-size:1.8rem}
+  .nota{margin:0 0 28px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+
+<!-- INÍCIO -->
+<section id="inicio" class="intro">
+  <div class="topo"><div class="logo">Math<span>Craft</span></div></div>
+  <h1>Mercadinho da Matemática</h1>
+  <p>Resolva 8 situações do dia a dia: desconto, troco, conta de luz e velocidade. Cada acerto vale pontos. Acertos seguidos valem mais.</p>
+
+  <label for="nome">Seu nome ou nome da equipe</label>
+  <input type="text" id="nome" maxlength="24" placeholder="Ex.: Equipe Azul" autocomplete="off">
+
+  <label>Escolha o tema</label>
+  <div class="temas" id="temas"></div>
+
+  <details>
+    <summary>Como o código sorteia uma pergunta</summary>
+    <p>Este é o trecho de JavaScript que cria uma pergunta de desconto. Cada vez que você joga, os números mudam.</p>
+<pre>function desconto() {
+  const preco = sortear([40, 60, 80, 120]);
+  const pct   = sortear([10, 20, 25, 50]);
+  const economia = preco * pct / 100;
+  return {
+    texto: `Uma camiseta custa R$ ${preco} e está
+            com ${pct}% de desconto. Quanto você paga?`,
+    resposta: preco - economia
+  };
+}</pre>
+  </details>
+</section>
+
+<!-- JOGO -->
+<section id="jogo" class="hidden">
+  <div class="topo">
+    <div class="logo">Math<span>Craft</span></div>
+    <div class="placar" aria-live="polite">
+      <div>Pontos <b id="pts">0</b></div>
+      <div>Sequência <b id="seq">0</b></div>
+    </div>
+  </div>
+  <div class="barra" aria-hidden="true"><i id="prog"></i></div>
+
+  <div class="nota">
+    <div class="cat"><b id="cat"></b><span id="num"></span></div>
+    <p class="texto" id="texto"></p>
+  </div>
+
+  <div class="visor" id="visor">
+    <input id="resp" type="text" inputmode="decimal" autocomplete="off" aria-label="Sua resposta" placeholder="0">
+    <span class="un" id="un"></span>
+  </div>
+  <div class="linha">
+    <button class="btn" id="conferir">Conferir</button>
+    <button class="btn sec" id="dicaBtn">Ver dica (−3 pontos)</button>
+    <button class="btn sec" id="menuBtn">Voltar ao menu</button>
+  </div>
+
+  <div class="confirma hidden" id="confirma">
+    <span>Sair da partida? Os pontos serão perdidos.</span>
+    <button class="btn" id="sim">Sim, voltar ao menu</button>
+    <button class="btn sec" id="nao">Continuar jogando</button>
+  </div>
+
+  <div class="dica hidden" id="dica"></div>
+  <div class="retorno hidden" id="retorno" role="status" aria-live="polite"></div>
+  <div class="linha" style="margin-top:16px"><button class="btn hidden" id="proxima">Próxima pergunta</button></div>
+</section>
+
+<!-- FIM -->
+<section id="fim" class="hidden">
+  <div class="topo"><div class="logo">Math<span>Craft</span></div></div>
+  <h2 id="fimNome"></h2>
+  <p class="titulo-final" id="titulo"></p>
+  <div class="resumo">
+    <div>Pontos<b id="fPts">0</b></div>
+    <div>Acertos<b id="fHits">0</b></div>
+    <div>Maior sequência<b id="fSeq">0</b></div>
+  </div>
+  <h2 style="font-size:1.15rem">Badges conquistados</h2>
+  <ul class="badges" id="badges"></ul>
+  <h2 style="font-size:1.15rem">Ranking neste computador</h2>
+  <ol class="rank" id="rank"></ol>
+  <div class="linha">
+    <button class="btn" id="again">Voltar ao menu</button>
+    <button class="btn sec" id="limpar">Limpar ranking</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const brl = n => n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const num = n => n.toLocaleString('pt-BR', {maximumFractionDigits:2});
+const rnd = (a,b) => Math.floor(Math.random()*(b-a+1)) + a;
+const sortear = arr => arr[rnd(0, arr.length-1)];
+const embaralhar = arr => arr.map(v => [Math.random(), v]).sort((a,b) => a[0]-b[0]).map(x => x[1]);
+const mostrar = (v, un) => un === 'R$' ? brl(v) : num(v) + ' ' + un;
+
+/* ---------- temas e geradores de perguntas ---------- */
+const CATS = {
+  desconto:   {nome:'Desconto',     emoji:'🏷️', sub:'Quanto você economiza',    badge:'Rei do Desconto', cor:'#f2b705'},
+  troco:      {nome:'Troco',        emoji:'💵', sub:'Quanto volta pra você',    badge:'Mão de ouro no troco', cor:'#5fd3a0'},
+  luz:        {nome:'Conta de luz', emoji:'💡', sub:'Quanto cada aparelho gasta', badge:'Economista da luz', cor:'#6cc7ff'},
+  velocidade: {nome:'Velocidade',   emoji:'🚌', sub:'Distância, tempo e ritmo',  badge:'Piloto de estrada', cor:'#ff9b73'}
+};
+
+const GERADORES = {
+  desconto(n){
+    const item = sortear(['Uma camiseta','Um tênis','Um liquidificador','Uma mochila','Um ventilador']);
+    const p   = sortear(n < 3 ? [40,60,80,100,120,150,200] : [20,40,60,80,120,160,240]);
+    const pct = sortear(n === 1 ? [10,20,50] : n === 2 ? [10,20,25,50] : [15,25,30,35]);
+    const eco = p * pct / 100;
+    const perguntaEco = n === 3 && Math.random() < .5;
+    const truques = {
+      10:'Para 10%, é só dividir o preço por 10.',
+      20:'Para 20%, ache 10% (divida por 10) e dobre o resultado.',
+      25:'Para 25%, divida o preço por 4 (ou divida por 2 duas vezes).',
+      50:'Para 50%, é só dividir o preço por 2.',
+      15:'Para 15%, ache 10% (divida por 10) e some metade disso, que dá os 5%.',
+      30:'Para 30%, ache 10% (divida por 10) e multiplique por 3.',
+      35:'Para 35%, ache 10% e multiplique por 3; depois some metade de 10%, que dá os 5%.'
+    };
+    return {
+      texto: `${item} custa ${brl(p)} e está com ${pct}% de desconto. ` +
+             (perguntaEco ? 'Quanto você economiza?' : 'Quanto você vai pagar?'),
+      ans: perguntaEco ? eco : p - eco, un:'R$',
+      dica: `Primeiro ache ${pct}% de ${brl(p)}: multiplique por ${pct} e divida por 100.`,
+      passos: [
+        `Descubra o valor do desconto: ${pct}% de ${brl(p)}. Multiplique o preço por ${pct} e divida por 100: ${num(p)} × ${pct} ÷ 100 = ${brl(eco)}.`,
+        perguntaEco
+          ? `Esse valor do desconto já é o que você economiza: ${brl(eco)}.`
+          : `Tire o desconto do preço: ${brl(p)} − ${brl(eco)} = ${brl(p - eco)}. Esse é o valor que você paga.`
+      ],
+      truque: truques[pct]
+    };
+  },
+  troco(n){
+    const prods = embaralhar(['pão','leite','café','arroz','feijão','sabão','açúcar']).slice(0, n);
+    const precos = prods.map(() => n === 3 ? rnd(20,300)*10 : rnd(2,60)*50);   // em centavos
+    const total = precos.reduce((a,b) => a+b, 0);
+    const nota = [10,20,50,100,200].find(v => v*100 > total);
+    const troco = (nota*100 - total)/100;
+    const lista = prods.map((p,i) => `${p} (${brl(precos[i]/100)})`).join(', ');
+    const passos = [];
+    if (n > 1) passos.push(`Some tudo o que você comprou: ${precos.map(c => brl(c/100)).join(' + ')} = ${brl(total/100)}.`);
+    else passos.push(`O total da compra é ${brl(total/100)}.`);
+    passos.push(`Veja com quanto você pagou: uma nota de ${brl(nota)}.`);
+    passos.push(`O troco é o que você pagou menos o total: ${brl(nota)} − ${brl(total/100)} = ${brl(troco)}.`);
+    return {
+      texto: `Você comprou ${lista}. Pagou com uma nota de ${brl(nota)}. Qual foi o troco?`,
+      ans: troco, un:'R$',
+      dica: 'Some tudo que você comprou e tire esse total do valor da nota.',
+      passos,
+      truque: `Para conferir: some o troco ao total da compra. ${brl(total/100)} + ${brl(troco)} tem que dar ${brl(nota)}. É assim que o caixa conta o troco.`
+    };
+  },
+  luz(n){
+    const ap = sortear([{n:'Um chuveiro elétrico',w:5000},{n:'Um ferro de passar',w:1000},{n:'Uma TV',w:100},{n:'Um ventilador',w:100},{n:'Um micro-ondas',w:1000}]);
+    const h = sortear([1,2,4,5]);
+    const wh = ap.w * h * 30;
+    const kwh = wh / 1000;
+    const passosKwh = [
+      `Multiplique a potência pelas horas por dia e pelos dias: ${num(ap.w)} W × ${h} h × 30 dias = ${num(wh)} Wh.`,
+      `A conta de luz cobra em kWh, então divida por 1000: ${num(wh)} ÷ 1000 = ${num(kwh)} kWh.`
+    ];
+    if (n === 1) return {
+      texto: `${ap.n} de ${num(ap.w)} W fica ligado ${h} ${h === 1 ? 'hora' : 'horas'} por dia, durante 30 dias. Quantos kWh ele gasta no mês?`,
+      ans: kwh, un:'kWh',
+      dica: 'kWh = watts × horas × dias ÷ 1000.',
+      passos: passosKwh,
+      truque: 'O "k" de kWh quer dizer mil. Por isso 1 kWh é um aparelho de 1000 W ligado por 1 hora.'
+    };
+    const t = n === 2 ? sortear([0.8, 1]) : sortear([0.85, 0.95]);
+    return {
+      texto: `${ap.n} de ${num(ap.w)} W fica ligado ${h} ${h === 1 ? 'hora' : 'horas'} por dia, durante 30 dias. Cada kWh custa ${brl(t)}. Quanto ele custa no mês?`,
+      ans: kwh * t, un:'R$',
+      dica: 'Ache os kWh do mês (watts × horas × dias ÷ 1000) e multiplique pelo preço do kWh.',
+      passos: passosKwh.concat([`Agora multiplique os kWh pelo preço de cada um: ${num(kwh)} kWh × ${brl(t)} = ${brl(kwh*t)}.`]),
+      truque: 'Faça sempre em duas etapas: primeiro descubra os kWh, depois multiplique pelo preço. Não multiplique os watts direto pelo preço.'
+    };
+  },
+  velocidade(n){
+    if (n === 1) {
+      const v = sortear([30,40,50,60]), t = sortear([2,3,4,5]);
+      return { texto:`Um ônibus anda ${v*t} km em ${t} horas. Qual foi a velocidade média?`,
+        ans:v, un:'km/h', dica:'Velocidade = distância ÷ tempo.',
+        passos:[`Velocidade é quantos quilômetros se anda em 1 hora. Por isso, divida a distância pelo tempo.`,
+                `${v*t} km ÷ ${t} h = ${v} km/h.`],
+        truque:'Confira multiplicando: velocidade × tempo tem que dar a distância. ' + `${v} × ${t} = ${v*t}.` };
+    }
+    if (n === 2) {
+      const v = sortear([40,60,80,90]), t = sortear([2,3,4,5]);
+      return { texto:`Um carro anda a ${v} km/h e precisa percorrer ${v*t} km. Quantas horas dura a viagem?`,
+        ans:t, un:'h', dica:'Tempo = distância ÷ velocidade.',
+        passos:[`A cada hora o carro anda ${v} km. Veja quantas vezes ${v} cabe em ${v*t}: divida a distância pela velocidade.`,
+                `${v*t} km ÷ ${v} km/h = ${t} horas.`],
+        truque:'Lembre: distância = velocidade × tempo. Para achar o tempo, divida a distância pela velocidade.' };
+    }
+    const v = sortear([60,80]), t = sortear([1.5,2.5,3.5]);
+    const inteiras = Math.floor(t);
+    return { texto:`Uma van viaja a ${v} km/h durante ${num(t)} horas. Quantos quilômetros ela percorre?`,
+      ans:v*t, un:'km', dica:'Distância = velocidade × tempo.',
+      passos:[`Em cada hora a van anda ${v} km. Multiplique a velocidade pelo tempo: ${v} × ${num(t)} = ${num(v*t)} km.`],
+      truque:`Meia hora é metade da velocidade. Faça ${inteiras} × ${v} = ${inteiras*v} e some ${v/2} (a meia hora): ${inteiras*v} + ${v/2} = ${num(v*t)} km.` };
+  }
+};
+
+/* ---------- estado do jogo ---------- */
+const TOTAL = 8;
+let S = null;
+
+function montarTemas(){
+  const box = $('#temas');
+  box.innerHTML = '';
+  const mix = document.createElement('button');
+  mix.className = 'tema mix';
+  mix.innerHTML = '<b>🎲 Todos os temas</b><small>Um pouco de cada, do mais fácil ao mais difícil</small>';
+  mix.onclick = () => iniciar('mix');
+  box.appendChild(mix);
+  Object.entries(CATS).forEach(([k,c]) => {
+    const b = document.createElement('button');
+    b.className = 'tema'; b.style.setProperty('--c', c.cor);
+    b.innerHTML = `<b>${c.emoji} ${c.nome}</b><small>${c.sub}</small>`;
+    b.onclick = () => iniciar(k);
+    box.appendChild(b);
+  });
+}
+
+function trocar(tela){
+  ['inicio','jogo','fim'].forEach(id => $('#'+id).classList.toggle('hidden', id !== tela));
+  window.scrollTo(0,0);
+}
+
+function iniciar(tema){
+  const ordem = tema === 'mix'
+    ? embaralhar(Object.keys(CATS).concat(Object.keys(CATS)))
+    : Array(TOTAL).fill(tema);
+  S = {nome: ($('#nome').value.trim() || 'Jogador'), ordem, i:0, pts:0, seq:0, melhor:0, acertos:0, dicas:0, porCat:{}, q:null, respondida:false, dicaUsada:false};
+  $('#confirma').classList.add('hidden');
+  trocar('jogo');
+  proxima();
+}
+
+function proxima(){
+  if (S.i >= TOTAL) return fim();
+  const nivel = 1 + Math.floor(S.i * 3 / TOTAL);
+  const cat = S.ordem[S.i];
+  S.q = Object.assign({cat}, GERADORES[cat](nivel));
+  S.respondida = false; S.dicaUsada = false;
+
+  $('.nota').style.setProperty('--c', CATS[S.q.cat].cor);
+  $('#confirma').classList.add('hidden');
+  $('#cat').textContent = CATS[S.q.cat].emoji + ' ' + CATS[S.q.cat].nome;
+  $('#num').textContent = `Pergunta ${S.i+1} de ${TOTAL}`;
+  $('#texto').textContent = S.q.texto;
+  $('#un').textContent = S.q.un;
+  $('#resp').value = ''; $('#resp').disabled = false;
+  $('#visor').className = 'visor';
+  ['dica','retorno','proxima'].forEach(id => $('#'+id).classList.add('hidden'));
+  $('#conferir').disabled = false; $('#dicaBtn').disabled = false;
+  $('#prog').style.width = (S.i / TOTAL * 100) + '%';
+  atualizarPlacar();
+  $('#resp').focus();
+}
+
+function atualizarPlacar(){
+  const p = $('#pts'), antes = p.textContent;
+  p.textContent = S.pts; $('#seq').textContent = S.seq;
+  if (String(S.pts) !== antes){ p.classList.remove('pulo'); void p.offsetWidth; p.classList.add('pulo'); }
+}
+
+function lerNumero(txt){
+  let s = txt.replace(/[^\d,.\-]/g, '');
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  const v = parseFloat(s);
+  return isNaN(v) ? null : v;
+}
+
+function conferir(){
+  if (S.respondida) return;
+  const v = lerNumero($('#resp').value);
+  if (v === null){ $('#resp').focus(); return; }
+  S.respondida = true;
+  const ok = Math.abs(v - S.q.ans) < 0.005;
+  const c = S.q.cat;
+  S.porCat[c] = S.porCat[c] || {n:0, ok:0};
+  S.porCat[c].n++;
+  const r = $('#retorno');
+  const passos = '<p class="como">Como fazer a conta</p><ol>' + S.q.passos.map(p => `<li>${p}</li>`).join('') + '</ol>' +
+                 (S.q.truque ? `<p class="truque">💡 ${S.q.truque}</p>` : '');
+  if (ok){
+    const ganho = Math.max(5, 10 + Math.min(S.seq, 5)*2 - (S.dicaUsada ? 3 : 0));
+    S.pts += ganho; S.seq++; S.acertos++; S.porCat[c].ok++;
+    S.melhor = Math.max(S.melhor, S.seq);
+    r.className = 'retorno certo';
+    r.innerHTML = `<strong>Certo! <span class="pontos">+${ganho} pontos</span></strong>${passos}`;
+    $('#visor').classList.add('certo');
+  } else {
+    S.seq = 0;
+    r.className = 'retorno errado';
+    r.innerHTML = `<strong>Quase. A resposta é ${mostrar(S.q.ans, S.q.un)}.</strong>${passos}`;
+    $('#visor').classList.add('errado');
+  }
+  S.i++;
+  atualizarPlacar();
+  $('#prog').style.width = (S.i / TOTAL * 100) + '%';
+  $('#resp').disabled = true; $('#conferir').disabled = true; $('#dicaBtn').disabled = true;
+  const p = $('#proxima');
+  p.textContent = S.i >= TOTAL ? 'Ver resultado' : 'Próxima pergunta';
+  p.classList.remove('hidden');
+  p.focus();
+}
+
+function dica(){
+  if (S.respondida) return;
+  if (!S.dicaUsada){ S.dicaUsada = true; S.dicas++; }
+  const d = $('#dica'); d.textContent = '💡 ' + S.q.dica; d.classList.remove('hidden');
+}
+
+/* ---------- fim de jogo ---------- */
+function titulo(h){
+  return h >= 8 ? 'Mestre da Matemática' : h >= 6 ? 'Gerente do Mercadinho' : h >= 4 ? 'Caixa Atento' : 'Aprendiz de Feira';
+}
+
+function ranking(){ try { return JSON.parse(localStorage.getItem('mathcraft-rank')) || []; } catch(e){ return []; } }
+function salvarRanking(lista){ try { localStorage.setItem('mathcraft-rank', JSON.stringify(lista)); } catch(e){} }
+
+function fim(){
+  trocar('fim');
+  $('#fimNome').textContent = 'Fim de jogo, ' + S.nome + '!';
+  $('#titulo').textContent = titulo(S.acertos);
+  $('#fPts').textContent = S.pts; $('#fHits').textContent = S.acertos + ' de ' + TOTAL; $('#fSeq').textContent = S.melhor;
+
+  const b = [];
+  if (S.melhor >= 5) b.push('Sequência de 5');
+  if (S.acertos === TOTAL) b.push('Sem erros');
+  if (S.acertos >= 6 && S.dicas === 0) b.push('Sem dicas');
+  Object.entries(S.porCat).forEach(([k,v]) => { if (v.n >= 2 && v.ok === v.n) b.push(CATS[k].badge); });
+  const ul = $('#badges'); ul.innerHTML = '';
+  if (!b.length){ const li = document.createElement('li'); li.style.background='transparent'; li.style.color='var(--giz-2)'; li.style.padding='0'; li.textContent = 'Nenhum desta vez. Jogue de novo para conquistar o primeiro.'; ul.appendChild(li); }
+  b.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+
+  const lista = ranking(); lista.push({nome:S.nome, pts:S.pts, acertos:S.acertos});
+  lista.sort((a,b) => b.pts - a.pts); salvarRanking(lista.slice(0,5));
+  mostrarRanking();
+}
+
+function mostrarRanking(){
+  const ol = $('#rank'); ol.innerHTML = '';
+  const l = ranking();
+  if (!l.length){ ol.innerHTML = '<li><span>Ainda vazio.</span></li>'; return; }
+  l.forEach(e => {
+    const li = document.createElement('li');
+    li.textContent = e.nome + ': ' + e.pts + ' pontos ';
+    const s = document.createElement('span'); s.textContent = '(' + e.acertos + ' acertos)';
+    li.appendChild(s); ol.appendChild(li);
+  });
+}
+
+/* ---------- eventos ---------- */
+$('#conferir').onclick = conferir;
+$('#dicaBtn').onclick = dica;
+$('#proxima').onclick = proxima;
+$('#resp').addEventListener('keydown', e => { if (e.key === 'Enter') conferir(); });
+$('#again').onclick = () => { trocar('inicio'); };
+$('#menuBtn').onclick = () => { $('#confirma').classList.remove('hidden'); $('#nao').focus(); };
+$('#nao').onclick = () => { $('#confirma').classList.add('hidden'); if (!S.respondida) $('#resp').focus(); };
+$('#sim').onclick = () => { $('#confirma').classList.add('hidden'); trocar('inicio'); };
+$('#limpar').onclick = () => { salvarRanking([]); mostrarRanking(); };
+montarTemas();
+</script>
+</body>
+</html>
